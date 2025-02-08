@@ -30,7 +30,7 @@ const App = () => {
           setOriginalPersonsAll(originalPersonsAll.filter((person) => person.id !== id));
         })
         .catch(() => {
-          alert("Gagal menghapus. Mungkin sudah dihapus sebelumnya dari server.");
+          alert("Cannot delete contact.");
         });
     }
   };
@@ -51,18 +51,41 @@ const App = () => {
 
   const handleClick = (e) => {
     e.preventDefault();
-    if (personsAll.find((person) => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`);
+    const existingPerson = personsAll.find((person) => person.name === newName);
+    
+    if (existingPerson) {
+      const isConfirm = window.confirm(
+        `${newName} is already in the phonebook. Replace the old number with the new one?`
+      );
+      
+      if (isConfirm) {
+        const updatedPerson = { ...existingPerson, number: newNumber };
+        
+        persons.update(existingPerson.id, updatedPerson)
+          .then((response) => {
+            setPersonsAll(personsAll.map((person) => 
+              person.id !== existingPerson.id ? person : response.data
+            ));
+            setOriginalPersonsAll(originalPersonsAll.map((person) => 
+              person.id !== existingPerson.id ? person : response.data
+            ));
+            setNewName("");
+            setNewNumber("");
+          })
+          .catch(() => {
+            alert("Cannot update contact.");
+          });
+      }
     } else {
       const personObject = { name: newName, number: newNumber };
-
+      
       persons.create(personObject).then((response) => {
         setPersonsAll(personsAll.concat(response.data));
         setOriginalPersonsAll(originalPersonsAll.concat(response.data));
         setNewName("");
         setNewNumber("");
       }).catch(() => {
-        alert("Gagal menambahkan kontak.");
+        alert("Fail to add the contact.");
       });
     }
   };
