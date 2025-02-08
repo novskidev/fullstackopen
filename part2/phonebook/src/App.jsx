@@ -7,6 +7,7 @@ const App = () => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     persons.getAll().then((response) => {
@@ -15,10 +16,17 @@ const App = () => {
     });
   }, []);
 
+  const showNotification = (message) => {
+    setNotification(message);
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
   const handleDelete = (id) => {
     const personToDelete = personsAll.find((person) => person.id === id);
     if (!personToDelete) {
-      alert("Kontak tidak ditemukan!");
+      alert("Contact not found!");
       return;
     }
 
@@ -28,9 +36,10 @@ const App = () => {
         .then(() => {
           setPersonsAll(personsAll.filter((person) => person.id !== id));
           setOriginalPersonsAll(originalPersonsAll.filter((person) => person.id !== id));
+          showNotification(`${personToDelete.name} deleted successfully.`);
         })
         .catch(() => {
-          alert("Cannot delete contact.");
+          alert("Failed to delete contact.");
         });
     }
   };
@@ -71,9 +80,10 @@ const App = () => {
             ));
             setNewName("");
             setNewNumber("");
+            showNotification(`${newName}'s number updated successfully.`);
           })
           .catch(() => {
-            alert("Cannot update contact.");
+            alert("Failed to update contact.");
           });
       }
     } else {
@@ -84,8 +94,9 @@ const App = () => {
         setOriginalPersonsAll(originalPersonsAll.concat(response.data));
         setNewName("");
         setNewNumber("");
+        showNotification(`${newName} added successfully.`);
       }).catch(() => {
-        alert("Fail to add the contact.");
+        alert("Failed to add contact.");
       });
     }
   };
@@ -93,6 +104,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      {notification && <div style={{ color: "green", marginBottom: "10px" }}>{notification}</div>}
       filter shown with <input value={filter} onChange={handleChange} />
       <form>
         <div>
