@@ -3,7 +3,7 @@ import persons from "./services/persons";
 
 const App = () => {
   const [personsAll, setPersonsAll] = useState([]);
-  const [originalPersonsAll, setOriginalPersonsAll] = useState([]); // Simpan data asli
+  const [originalPersonsAll, setOriginalPersonsAll] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
@@ -11,23 +11,42 @@ const App = () => {
   useEffect(() => {
     persons.getAll().then((response) => {
       setPersonsAll(response.data);
-      setOriginalPersonsAll(response.data); // Simpan data asli
+      setOriginalPersonsAll(response.data);
     });
   }, []);
 
-  console.log(personsAll);
+  const handleDelete = (id) => {
+    const personToDelete = personsAll.find((person) => person.id === id);
+    if (!personToDelete) {
+      alert("Kontak tidak ditemukan!");
+      return;
+    }
 
-  const handleDelete = (e) => {
-    e.preventDefault();
-    persons.remove(e.target.value);
+    const isConfirm = window.confirm(`Delete ${personToDelete.name} ?`);
+    if (isConfirm) {
+      persons.remove(id)
+        .then(() => {
+          setPersonsAll(personsAll.filter((person) => person.id !== id));
+          setOriginalPersonsAll(originalPersonsAll.filter((person) => person.id !== id));
+        })
+        .catch(() => {
+          alert("Gagal menghapus. Mungkin sudah dihapus sebelumnya dari server.");
+        });
+    }
   };
 
   const handleChange = (e) => {
-    setFilter(e.target.value);
-    const filtered = originalPersonsAll.filter((person) =>
-      person.name.toLowerCase().includes(e.target.value.toLowerCase())
-    );
-    setPersonsAll(filtered);
+    const searchValue = e.target.value;
+    setFilter(searchValue);
+
+    if (searchValue === "") {
+      setPersonsAll(originalPersonsAll);
+    } else {
+      const filtered = originalPersonsAll.filter((person) =>
+        person.name.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setPersonsAll(filtered);
+    }
   };
 
   const handleClick = (e) => {
@@ -35,15 +54,16 @@ const App = () => {
     if (personsAll.find((person) => person.name === newName)) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      const personObject = {
-        name: newName,
-        number: newNumber,
-      };
-      persons.create(personObject);
-      setPersonsAll(personsAll.concat(personObject));
-      setOriginalPersonsAll(originalPersonsAll.concat(personObject)); // Update juga data asli
-      setNewName("");
-      setNewNumber("");
+      const personObject = { name: newName, number: newNumber };
+
+      persons.create(personObject).then((response) => {
+        setPersonsAll(personsAll.concat(response.data));
+        setOriginalPersonsAll(originalPersonsAll.concat(response.data));
+        setNewName("");
+        setNewNumber("");
+      }).catch(() => {
+        alert("Gagal menambahkan kontak.");
+      });
     }
   };
 
@@ -53,31 +73,18 @@ const App = () => {
       filter shown with <input value={filter} onChange={handleChange} />
       <form>
         <div>
-          name:{" "}
-          <input
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-          />{" "}
-          <br />
-          number:{" "}
-          <input
-            value={newNumber}
-            onChange={(event) => setNewNumber(event.target.value)}
-          />
+          name: <input value={newName} onChange={(e) => setNewName(e.target.value)} /> <br />
+          number: <input value={newNumber} onChange={(e) => setNewNumber(e.target.value)} />
         </div>
         <div>
-          <button onClick={handleClick} type="submit">
-            add
-          </button>
+          <button onClick={handleClick} type="submit">add</button>
         </div>
       </form>
       <h2>Numbers</h2>
       {personsAll.map((person) => (
-        <p key={person.name}>
-          {person.name} {person.number}{" "}
-          <button value={person.id} onClick={handleDelete}>
-            delete
-          </button>
+        <p key={person.id}>
+          {person.name} {person.number} {" "}
+          <button onClick={() => handleDelete(person.id)}>delete</button>
         </p>
       ))}
     </div>
