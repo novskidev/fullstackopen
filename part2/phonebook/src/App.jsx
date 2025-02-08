@@ -8,6 +8,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState("");
   const [filter, setFilter] = useState("");
   const [notification, setNotification] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     persons.getAll().then((response) => {
@@ -23,10 +24,17 @@ const App = () => {
     }, 3000);
   };
 
+  const showError = (message) => {
+    setError(message);
+    setTimeout(() => {
+      setError(null);
+    }, 3000);
+  };
+
   const handleDelete = (id) => {
     const personToDelete = personsAll.find((person) => person.id === id);
     if (!personToDelete) {
-      alert("Contact not found!");
+      showError("Kontak tidak ditemukan!");
       return;
     }
 
@@ -39,7 +47,7 @@ const App = () => {
           showNotification(`${personToDelete.name} deleted successfully.`);
         })
         .catch(() => {
-          alert("Failed to delete contact.");
+          showError(`information of ${personToDelete.name} has already been removed from server`);
         });
     }
   };
@@ -83,7 +91,7 @@ const App = () => {
             showNotification(`${newName}'s number updated successfully.`);
           })
           .catch(() => {
-            alert("Failed to update contact.");
+            showError("Failed to update contact.");
           });
       }
     } else {
@@ -96,7 +104,7 @@ const App = () => {
         setNewNumber("");
         showNotification(`${newName} added successfully.`);
       }).catch(() => {
-        alert("Failed to add contact.");
+        showError("Failed to add contact.");
       });
     }
   };
@@ -105,6 +113,7 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
       {notification && <div style={{ color: "green", marginBottom: "10px" }}>{notification}</div>}
+      {error && <div style={{ color: "red", marginBottom: "10px" }}>{error}</div>}
       filter shown with <input value={filter} onChange={handleChange} />
       <form>
         <div>
