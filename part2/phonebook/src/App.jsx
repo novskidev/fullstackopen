@@ -34,7 +34,7 @@ const App = () => {
   const handleDelete = (id) => {
     const personToDelete = personsAll.find((person) => person.id === id);
     if (!personToDelete) {
-      showError("Kontak tidak ditemukan!");
+      showError("Contact not found!");
       return;
     }
 
