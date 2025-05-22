@@ -23,4 +23,3 @@ export default {
   update: update,
   remove: remove,
 };
-

@@ -90,8 +90,8 @@ const App = () => {
             setNewNumber("");
             showNotification(`${newName}'s number updated successfully.`);
           })
-          .catch(() => {
-            showError("Failed to update contact.");
+          .catch((error) => {
+            showError(error.response?.data?.error);
           });
       }
     } else {
@@ -103,8 +103,8 @@ const App = () => {
         setNewName("");
         setNewNumber("");
         showNotification(`${newName} added successfully.`);
-      }).catch(() => {
-        showError("Failed to add contact.");
+      }).catch((error) => {
+        showError(error.response?.data?.error);
       });
     }
   };
